@@ -1,0 +1,49 @@
+import os
+import shutil
+from datetime import datetime
+
+def organize_files(source_dir, organize_by='type'):
+    """
+    Organizes files in the source directory by type or date.
+    """
+    file_types = {
+        'Documents': ['.pdf', '.docx', '.txt'],
+        'Images': ['.jpg', '.png', '.gif'],
+        'Code': ['.py', '.js', '.html'],
+        'Archives': ['.zip', '.rar']
+    }
+
+    for filename in os.listdir(source_dir):
+        file_path = os.path.join(source_dir, filename)
+        
+        if os.path.isfile(file_path):
+            file_ext = os.path.splitext(filename)[1].lower()
+            date_created = datetime.fromtimestamp(os.path.getctime(file_path))
+            
+            if organize_by == 'type':
+                # Organize by file type
+                dest_dir = 'Other'
+                for category, extensions in file_types.items():
+                    if file_ext in extensions:
+                        dest_dir = category
+                        break
+            elif organize_by == 'date':
+                # Organize by creation date (YYYY-MM)
+                dest_dir = date_created.strftime('%Y-%m')
+            else:
+                raise ValueError("Invalid organization type. Use 'type' or 'date'")
+
+            dest_path = os.path.join(source_dir, 'Organized_Files', dest_dir)
+            os.makedirs(dest_path, exist_ok=True)
+
+            try:
+                shutil.move(file_path, os.path.join(dest_path, filename))
+                print(f"Moved {filename} to {dest_dir}")
+            except Exception as e:
+                print(f"Error moving {filename}: {str(e)}")
+
+if __name__ == "__main__":
+    # Example usage
+    downloads_dir = os.path.expanduser('~/Downloads')
+    organize_files(downloads_dir, organize_by='type')
+    print("File organization completed!")
